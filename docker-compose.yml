@@ -1,0 +1,39 @@
+# version: '3.7'
+services:
+  python:
+    build:
+      dockerfile: Dockerfile
+      args:
+        WORKING_DIRECTORY: ${WORKING_DIRECTORY}
+    container_name: ros2_docker_practice
+    environment:
+      - TZ=Asia/Tokyo
+      - PYTHONPATH=/${WORKING_DIRECTORY}:/${WORKING_DIRECTORY}/src:/${WORKING_DIRECTORY}/jssp
+      - JUPYTER_PORT=${JUPYTER_PORT}
+      - RESOLUTION=1920x1080
+      - WANDB_API_KEY=${WANDB_API_KEY}
+
+    # Fix slow shutdown of web container
+    init: true
+    volumes:
+      # bind mount
+      - /${WORKING_DIRECTORY}
+    ports:
+      - ${JUPYTER_PORT}:${JUPYTER_PORT}
+      - ${TENSORBOARD_PORT}:${TENSORBOARD_PORT}
+      - 15900:5900
+      - 13389:3389
+      - 6080:80
+
+    # INFO: Following two lines are necessary for the backtrace by pdb
+    stdin_open: true
+    tty: true
+
+    # command: >
+    #   bash -c "
+    #     tensorboard --logdir data/ --host=0.0.0.0 --port ${TENSORBOARD_PORT} & \
+    #     jupyter notebook --no-browser --ip=0.0.0.0 --port ${JUPYTER_PORT} --allow-root --NotebookApp.token='demo'
+    #   "
+    working_dir: "/${WORKING_DIRECTORY}"
+    shm_size: "512m"
+    privileged: true
